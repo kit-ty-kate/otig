@@ -1,0 +1,13 @@
+(jbuild_version 1)
+
+(executable
+  ((name otig)
+   (public_name otig)
+   (flags (:standard -w A-44 -safe-string))
+   (libraries (cmdliner git-unix))))
+
+(rule
+  (with-stdout-to config.ml
+    (progn
+      (echo "let name = {|otig|}\n")
+      (echo "let version = {|${version:otig}|}\n"))))
