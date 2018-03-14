@@ -12,7 +12,7 @@ let rec get_hash fs r =
 
 let rec get_commits fs hash =
   Git_unix.FS.read fs hash >>= function
-  | Value.Commit x -> get_parents fs x >|= fun acc -> x :: acc
+  | Value.Commit x -> get_parents fs x >|= List.cons x
   | Value.Blob _ -> assert false
   | Value.Tree _ -> assert false
   | Value.Tag _ -> assert false
@@ -21,13 +21,23 @@ and get_parents fs commit =
   | [] -> Lwt.return (Ok [])
   | p::_ -> get_commits fs p (* TODO *)
 
+let rec get_first_nonempty_string = function
+  | ""::xs -> get_first_nonempty_string xs
+  | x::_ -> x
+  | [] -> ""
+
+let get_commit_short_message commit =
+  let msg = Commit.message commit in
+  let msgs = String.split_on_char '\n' msg in
+  get_first_nonempty_string msgs
+
 let () =
   match
     Lwt_main.run begin
       Git_unix.FS.create () >>= fun fs ->
       get_hash fs Reference.head >>= fun hash ->
       get_commits fs hash >>= fun commits ->
-      let msgs = List.map Commit.message commits in
+      let msgs = List.map get_commit_short_message commits in
       List.iter print_endline msgs;
       Lwt.return (Ok ())
     end

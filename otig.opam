@@ -1,3 +1,4 @@
 opam-version: "1.2"
 name: "otig"
 version: "0.1~"
+available: [ocaml-version >= "4.04.0"]
