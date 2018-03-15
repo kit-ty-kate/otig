@@ -4,7 +4,7 @@
   ((name otig)
    (public_name otig)
    (flags (:standard -w A-44 -safe-string))
-   (libraries (cmdliner git-unix))))
+   (libraries (cmdliner lwt ptime git git-unix))))
 
 (rule
   (with-stdout-to config.ml
