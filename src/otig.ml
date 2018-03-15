@@ -5,6 +5,7 @@ module Ref = Git_unix.FS.Ref
 module Value = Git_unix.FS.Value
 module Commit = Git_unix.FS.Value.Commit
 module Hash = Git_unix.FS.Value.Commit.Hash
+module User = Git.User
 
 let rec get_hash fs r =
   Ref.read fs r >>= function
@@ -36,7 +37,22 @@ let print_commit commit =
   let hash = Hash.to_hex (Commit.digest commit) in
   let hash = String.sub hash 0 (min 7 (String.length hash)) in
   let msg = get_commit_short_message commit in
-  Printf.printf "%s - %s\n" hash msg
+  let author = Commit.author commit in
+  let date, tz_offset_s = author.User.date in
+  let date = match Ptime.of_float_s (Int64.to_float date) with
+    | None -> assert false
+    | Some x -> x
+  in
+  let (y, m, d), ((hh, mm, ss), _) = Ptime.to_date_time date in
+  let tz_sign, tz_h, tz_m = match tz_offset_s with
+    | Some {User.sign = `Plus; hours; minutes} -> ("+", hours, minutes)
+    | Some {User.sign = `Minus; hours; minutes} -> ("-", hours, minutes)
+    | None -> ("+", 0, 0)
+  in
+  let author = author.User.name in
+  Printf.printf
+    "%s - %s (%d/%02d/%02d %02d:%02d:%02d %s%02d:%02d) <%s>\n"
+    hash msg y m d hh mm ss tz_sign tz_h tz_m author
 
 let () =
   match
