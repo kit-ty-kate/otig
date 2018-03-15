@@ -64,4 +64,4 @@ let () =
     end
   with
   | Ok () -> ()
-  | Error _ -> assert false (* TODO *)
+  | Error e -> Format.eprintf "Error: %a\n" Git_unix.FS.pp_error e; exit 1
